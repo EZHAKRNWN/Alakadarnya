@@ -1,0 +1,158 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+
+using namespace std;
+
+struct Film {
+    char judul[50];
+    char sutradara[50];
+    char genre[20];
+    char tahunRilis[10];
+    float rating;
+};
+
+const int MAX_FILM = 100;
+Film films[MAX_FILM];
+int filmCount = 0;
+const char FILE_NAME[] = "RateFlix.dat";
+
+// Fungsi untuk membaca file dan memuat data ke array
+void loadFilms() {
+    ifstream file(FILE_NAME);
+    if (!file) return;
+
+    filmCount = 0;
+    while (file.getline(films[filmCount].judul, 50, ',') &&
+           file.getline(films[filmCount].sutradara, 50, ',') &&
+           file.getline(films[filmCount].genre, 20, ',') &&
+           file.getline(films[filmCount].tahunRilis, 10, ',') &&
+           file >> films[filmCount].rating) {
+        file.ignore(); // Mengabaikan newline setelah rating
+        filmCount++;
+    }
+    file.close();
+}
+
+// Fungsi untuk menyimpan array ke file
+void saveFilms() {
+    ofstream file(FILE_NAME);
+    for (int i = 0; i < filmCount; i++) {
+        file << films[i].judul << "," << films[i].sutradara << "," << films[i].genre << ","
+             << films[i].tahunRilis << "," << films[i].rating << endl;
+    }
+    file.close();
+}
+
+// Fungsi untuk menambahkan film baru
+void addFilm() {
+    if (filmCount >= MAX_FILM) {
+        cout << "Kapasitas film penuh!" << endl;
+        return;
+    }
+
+    Film newFilm;
+    cin.ignore();
+    cout << "Masukkan Judul Film: ";
+    cin.getline(newFilm.judul, 50);
+
+    // Cek duplikasi
+    for (int i = 0; i < filmCount; i++) {
+        if (strcmp(films[i].judul, newFilm.judul) == 0) {
+            cout << "Film ini sudah terdaftar!" << endl;
+            return;
+        }
+    }
+
+    cout << "Masukkan Nama Sutradara: ";
+    cin.getline(newFilm.sutradara, 50);
+    cout << "Masukkan Genre: ";
+    cin.getline(newFilm.genre, 20);
+    cout << "Masukkan Tahun Rilis: ";
+    cin.getline(newFilm.tahunRilis, 10);
+    newFilm.rating = 0.0; // Rating awal 0.0
+
+    films[filmCount++] = newFilm;
+    saveFilms();
+    cout << "Film berhasil ditambahkan!" << endl;
+}
+
+// Fungsi untuk menampilkan daftar film
+void displayFilms() {
+    if (filmCount == 0) {
+        cout << "Tidak ada film yang tersimpan." << endl;
+        return;
+    }
+    cout << "Daftar Film:\n";
+    for (int i = 0; i < filmCount; i++) {
+        cout << "Judul: " << films[i].judul << " | Sutradara: " << films[i].sutradara
+             << " | Genre: " << films[i].genre << " | Tahun: " << films[i].tahunRilis
+             << " | Rating: " << films[i].rating << endl;
+    }
+}
+
+// Fungsi untuk mencari film berdasarkan genre
+void searchByGenre() {
+    char genre[20];
+    cin.ignore();
+    cout << "Masukkan genre film yang dicari: ";
+    cin.getline(genre, 20);
+
+    bool found = false;
+    for (int i = 0; i < filmCount; i++) {
+        if (strcmp(films[i].genre, genre) == 0) {
+            cout << "Judul: " << films[i].judul << " | Sutradara: " << films[i].sutradara
+                 << " | Tahun: " << films[i].tahunRilis << " | Rating: " << films[i].rating << endl;
+            found = true;
+        }
+    }
+    if (!found) {
+        cout << "Film dengan genre tersebut tidak ditemukan!" << endl;
+    }
+}
+
+// Fungsi untuk memperbarui rating film
+void updateRating() {
+    char filmTitle[50];
+    cin.ignore();
+    cout << "Masukkan judul film yang ingin diperbarui ratingnya: ";
+    cin.getline(filmTitle, 50);
+
+    for (int i = 0; i < filmCount; i++) {
+        if (strcmp(films[i].judul, filmTitle) == 0) {
+            cout << "Masukkan rating baru: ";
+            cin >> films[i].rating;
+            saveFilms();
+            cout << "Rating film berhasil diperbarui!" << endl;
+            return;
+        }
+    }
+    cout << "Film tidak ditemukan!" << endl;
+}
+
+// Fungsi utama
+int main() {
+    loadFilms();
+    int choice;
+    do {
+        cout << "\n===== RateFlix Menu =====\n";
+        cout << "1. Tambah Film Baru\n";
+        cout << "2. Lihat Daftar Film\n";
+        cout << "3. Cari Film Berdasarkan Genre\n";
+        cout << "4. Perbarui Rating Film\n";
+        cout << "5. Keluar\n";
+        cout << "Pilih opsi: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: addFilm(); break;
+            case 2: displayFilms(); break;
+            case 3: searchByGenre(); break;
+            case 4: updateRating(); break;
+            case 5: cout << "Thanks for using RateFlix! Stay tuned for more movie magic!" << endl; break;
+            default: cout << "Pilihan tidak valid!" << endl;
+        }
+    } while (choice != 5);
+
+    return 0;
+}
