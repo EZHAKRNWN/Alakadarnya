@@ -1,0 +1,348 @@
+#include <iostream>
+#include <fstream>
+#include <cstring>
+
+using namespace std;
+
+struct Task {
+    char name[50];
+    char category[20];
+    char deadline[15];
+    char status[15];
+};
+
+const int MAX_TASKS = 100;
+Task tasks[MAX_TASKS];
+int taskCount = 0;
+const char FILE_NAME[] = "WorkTracker.dat";
+
+// Fungsi untuk membaca file dan memuat data ke array
+void loadTasks() {
+    ifstream file(FILE_NAME);
+    if (!file) return;
+
+    taskCount = 0;
+    while (file.getline(tasks[taskCount].name, 50, ',') &&
+           file.getline(tasks[taskCount].category, 20, ',') &&
+           file.getline(tasks[taskCount].deadline, 15, ',') &&
+           file.getline(tasks[taskCount].status, 15)) {
+        taskCount++;
+    }
+    file.close();
+}
+
+// Fungsi untuk menyimpan array ke file
+void saveTasks() {
+    ofstream file(FILE_NAME);
+    for (int i = 0; i < taskCount; i++) {
+        file << tasks[i].name << "," << tasks[i].category << "," << tasks[i].deadline << "," << tasks[i].status << endl;
+    }
+    file.close();
+}
+
+// Fungsi untuk menambahkan tugas baru
+void addTask() {
+    if (taskCount >= MAX_TASKS) {
+        cout << "Kapasitas tugas penuh!" << endl;
+        return;
+    }
+
+    Task newTask;
+    cin.ignore();
+    cout << "Masukkan Nama Tugas: ";
+    cin.getline(newTask.name, 50);
+
+    // Cek duplikasi
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, newTask.name) == 0) {
+            cout << "Tugas ini sudah terdaftar!" << endl;
+            return;
+        }
+    }
+
+    cout << "Masukkan Kategori (pekerjaan/kuliah/rumah): ";
+    cin.getline(newTask.category, 20);
+    cout << "Masukkan Deadline (DD/MM/YYYY): ";
+    cin.getline(newTask.deadline, 15);
+    strcpy(newTask.status, "Belum Selesai");
+
+    tasks[taskCount++] = newTask;
+    saveTasks();
+    cout << "Tugas berhasil ditambahkan!" << endl;
+}
+
+// Fungsi untuk menampilkan semua tugas
+void displayTasks() {
+    if (taskCount == 0) {
+        cout << "Tidak ada tugas yang tersimpan." << endl;
+        return;
+    }
+    cout << "Daftar Tugas:\n";
+    for (int i = 0; i < taskCount; i++) {
+        cout << "Nama: " << tasks[i].name << " | Kategori: " << tasks[i].category
+             << " | Deadline: " << tasks[i].deadline << " | Status: " << tasks[i].status << endl;
+    }
+}
+
+// Fungsi untuk mencari tugas berdasarkan kategori
+void searchByCategory() {
+    char category[20];
+    cin.ignore();
+    cout << "Masukkan kategori tugas: ";
+    cin.getline(category, 20);
+
+    bool found = false;
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].category, category) == 0) {
+            cout << "Nama: " << tasks[i].name << " | Deadline: " << tasks[i].deadline
+                 << " | Status: " << tasks[i].status << endl;
+            found = true;
+        }
+    }
+    if (!found) {
+        cout << "Tidak ada tugas dalam kategori ini!" << endl;
+    }
+}
+
+// Fungsi untuk memperbarui status tugas
+void updateTaskStatus() {
+    char taskName[50];
+    cin.ignore();
+    cout << "Masukkan nama tugas yang ingin diperbarui: ";
+    cin.getline(taskName, 50);
+
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, taskName) == 0) {
+            strcpy(tasks[i].status, "Selesai");
+            saveTasks();
+            cout << "Status tugas berhasil diperbarui!" << endl;
+            return;
+        }
+    }
+    cout << "Tugas tidak ditemukan!" << endl;
+}
+
+// Fungsi untuk menghapus tugas yang sudah selesai
+void deleteCompletedTasks() {
+    char taskName[50];
+    cin.ignore();
+    cout << "Masukkan nama tugas yang ingin dihapus: ";
+    cin.getline(taskName, 50);
+
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, taskName) == 0 && strcmp(tasks[i].status, "Selesai") == 0) {
+            // Geser tugas setelahnya ke kiri
+            for (int j = i; j < taskCount - 1; j++) {
+                tasks[j] = tasks[j + 1];
+            }
+            taskCount--;
+            saveTasks();
+            cout << "Tugas berhasil dihapus!" << endl;
+            return;
+        }
+    }
+    cout << "Tugas tidak ditemukan atau belum selesai!" << endl;
+}
+
+// Fungsi utama
+int main() {
+    loadTasks();
+    int choice;
+    do {
+        cout << "\n===== WorkTracker Menu =====\n";
+        cout << "1. Tambah Tugas\n";
+        cout << "2. Lihat Daftar Tugas\n";
+        cout << "3. Cari Tugas Berdasarkan Kategori\n";
+        cout << "4. Perbarui Status Tugas\n";
+        cout << "5. Hapus Tugas yang Sudah Selesai\n";
+        cout << "6. Keluar\n";
+        cout << "Pilih opsi: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: addTask(); break;
+            case 2: displayTasks(); break;
+            case 3: searchByCategory(); break;
+            case 4: updateTaskStatus(); break;
+            case 5: deleteCompletedTasks(); break;
+            case 6: cout << "Terima kasih telah menggunakan WorkTracker! Tetap produktif!" << endl; break;
+            default: cout << "Pilihan tidak valid!" << endl;
+        }
+    } while (choice != 6);
+
+    return 0;
+}
+#include <iostream>
+#include <fstream>
+#include <cstring>
+
+using namespace std;
+
+struct Task {
+    char name[50];
+    char category[20];
+    char deadline[15];
+    char status[15];
+};
+
+const int MAX_TASKS = 100;
+Task tasks[MAX_TASKS];
+int taskCount = 0;
+const char FILE_NAME[] = "WorkTracker.dat";
+
+// Fungsi untuk membaca file dan memuat data ke array
+void loadTasks() {
+    ifstream file(FILE_NAME);
+    if (!file) return;
+
+    taskCount = 0;
+    while (file.getline(tasks[taskCount].name, 50, ',') &&
+           file.getline(tasks[taskCount].category, 20, ',') &&
+           file.getline(tasks[taskCount].deadline, 15, ',') &&
+           file.getline(tasks[taskCount].status, 15)) {
+        taskCount++;
+    }
+    file.close();
+}
+
+// Fungsi untuk menyimpan array ke file
+void saveTasks() {
+    ofstream file(FILE_NAME);
+    for (int i = 0; i < taskCount; i++) {
+        file << tasks[i].name << "," << tasks[i].category << "," << tasks[i].deadline << "," << tasks[i].status << endl;
+    }
+    file.close();
+}
+
+// Fungsi untuk menambahkan tugas baru
+void addTask() {
+    if (taskCount >= MAX_TASKS) {
+        cout << "Kapasitas tugas penuh!" << endl;
+        return;
+    }
+
+    Task newTask;
+    cin.ignore();
+    cout << "Masukkan Nama Tugas: ";
+    cin.getline(newTask.name, 50);
+
+    // Cek duplikasi
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, newTask.name) == 0) {
+            cout << "Tugas ini sudah terdaftar!" << endl;
+            return;
+        }
+    }
+
+    cout << "Masukkan Kategori (pekerjaan/kuliah/rumah): ";
+    cin.getline(newTask.category, 20);
+    cout << "Masukkan Deadline (DD/MM/YYYY): ";
+    cin.getline(newTask.deadline, 15);
+    strcpy(newTask.status, "Belum Selesai");
+
+    tasks[taskCount++] = newTask;
+    saveTasks();
+    cout << "Tugas berhasil ditambahkan!" << endl;
+}
+
+// Fungsi untuk menampilkan semua tugas
+void displayTasks() {
+    if (taskCount == 0) {
+        cout << "Tidak ada tugas yang tersimpan." << endl;
+        return;
+    }
+    cout << "Daftar Tugas:\n";
+    for (int i = 0; i < taskCount; i++) {
+        cout << "Nama: " << tasks[i].name << " | Kategori: " << tasks[i].category
+             << " | Deadline: " << tasks[i].deadline << " | Status: " << tasks[i].status << endl;
+    }
+}
+
+// Fungsi untuk mencari tugas berdasarkan kategori
+void searchByCategory() {
+    char category[20];
+    cin.ignore();
+    cout << "Masukkan kategori tugas: ";
+    cin.getline(category, 20);
+
+    bool found = false;
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].category, category) == 0) {
+            cout << "Nama: " << tasks[i].name << " | Deadline: " << tasks[i].deadline
+                 << " | Status: " << tasks[i].status << endl;
+            found = true;
+        }
+    }
+    if (!found) {
+        cout << "Tidak ada tugas dalam kategori ini!" << endl;
+    }
+}
+
+// Fungsi untuk memperbarui status tugas
+void updateTaskStatus() {
+    char taskName[50];
+    cin.ignore();
+    cout << "Masukkan nama tugas yang ingin diperbarui: ";
+    cin.getline(taskName, 50);
+
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, taskName) == 0) {
+            strcpy(tasks[i].status, "Selesai");
+            saveTasks();
+            cout << "Status tugas berhasil diperbarui!" << endl;
+            return;
+        }
+    }
+    cout << "Tugas tidak ditemukan!" << endl;
+}
+
+// Fungsi untuk menghapus tugas yang sudah selesai
+void deleteCompletedTasks() {
+    char taskName[50];
+    cin.ignore();
+    cout << "Masukkan nama tugas yang ingin dihapus: ";
+    cin.getline(taskName, 50);
+
+    for (int i = 0; i < taskCount; i++) {
+        if (strcmp(tasks[i].name, taskName) == 0 && strcmp(tasks[i].status, "Selesai") == 0) {
+            // Geser tugas setelahnya ke kiri
+            for (int j = i; j < taskCount - 1; j++) {
+                tasks[j] = tasks[j + 1];
+            }
+            taskCount--;
+            saveTasks();
+            cout << "Tugas berhasil dihapus!" << endl;
+            return;
+        }
+    }
+    cout << "Tugas tidak ditemukan atau belum selesai!" << endl;
+}
+
+// Fungsi utama
+int main() {
+    loadTasks();
+    int choice;
+    do {
+        cout << "\n===== WorkTracker Menu =====\n";
+        cout << "1. Tambah Tugas\n";
+        cout << "2. Lihat Daftar Tugas\n";
+        cout << "3. Cari Tugas Berdasarkan Kategori\n";
+        cout << "4. Perbarui Status Tugas\n";
+        cout << "5. Hapus Tugas yang Sudah Selesai\n";
+        cout << "6. Keluar\n";
+        cout << "Pilih opsi: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: addTask(); break;
+            case 2: displayTasks(); break;
+            case 3: searchByCategory(); break;
+            case 4: updateTaskStatus(); break;
+            case 5: deleteCompletedTasks(); break;
+            case 6: cout << "Terima kasih telah menggunakan WorkTracker! Tetap produktif!" << endl; break;
+            default: cout << "Pilihan tidak valid!" << endl;
+        }
+    } while (choice != 6);
+
+    return 0;
+}
